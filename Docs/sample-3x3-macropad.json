@@ -1,0 +1,12 @@
+{
+  "name": "Sample 3x3 Macropad",
+  "vendorId": "0xFEED",
+  "productId": "0x0000",
+  "layouts": {
+    "keymap": [
+      ["0,0", "0,1", "0,2"],
+      ["1,0", "1,1", "1,2"],
+      ["2,0", {"w": 2}, "2,1"]
+    ]
+  }
+}
