@@ -328,6 +328,22 @@ intermediate binary directly.
 - Grant Input Monitoring.
 - Run Diagnostics → Hardware Probe and copy the resulting report.
 
+### The keyboard goes dead after editing layers in another app
+
+Editing the board's layers in a VIA-based configurator (such as Work Louder Input) makes the
+keyboard re-enumerate over USB, which briefly drops MegaMicro's connection. MegaMicro now
+**auto-reconnects** — it retries with backoff and re-grabs the board once it reappears, so the
+lights come back on their own within a few seconds. The same recovery covers cable jiggles,
+USB-hub power blips, and firmware updates.
+
+If you *plan* to edit layers, open Diagnostics and use **Release for Editing** first. This frees
+MegaMicro's HID connection and pauses auto-reconnect so the two apps don't contend for the board;
+press **Reconnect** when you are done.
+
+If the board stays unresponsive even to other apps, its host-side USB binding has wedged — MegaMicro
+can only release its own connection, not the system's. **Unplug and replug the USB-C cable** to force
+a fresh enumeration (a full restart is not required).
+
 ### Keys do not trigger actions
 
 - Confirm Accessibility is granted to the exact MegaMicro build currently running.
