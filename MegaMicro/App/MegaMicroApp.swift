@@ -6,6 +6,24 @@ import SwiftUI
 /// wouldn't take clicks. Closing the window keeps the app (and the RGB/webhook
 /// engine) running; the Dock icon or menu-bar icon reopens it.
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// Single instance. If another MegaMicro is already running — a stale build
+    /// with the same bundle id, or a notification/LaunchServices relaunch —
+    /// bring the existing one forward and bow out. Two instances would
+    /// otherwise fight over the webhook port, the LAN sync port, and the HID
+    /// device, and confusingly stack two windows.
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        // XCTest launches the app as its test host; never self-terminate there.
+        if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil { return }
+        let current = NSRunningApplication.current
+        let existing = NSRunningApplication
+            .runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
+            .first { $0.processIdentifier != current.processIdentifier }
+        if let existing {
+            existing.activate()
+            NSApp.terminate(nil)
+        }
+    }
+
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         false
     }
