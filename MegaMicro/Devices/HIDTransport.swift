@@ -96,6 +96,11 @@ final class HIDTransport {
         IOHIDManagerSetDeviceMatchingMultiple(manager, matching as CFArray)
         IOHIDManagerScheduleWithRunLoop(manager, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
 
+        // IMPORTANT: open shared, never `kIOHIDOptionsTypeSeizeDevice`. This is
+        // the QMK raw-HID (0xFF60) pipe that VIA-based configurators (e.g. Work
+        // Louder Input) also use to push layer edits. Seizing it would lock
+        // those tools out and can wedge the board's host-side binding until a
+        // replug/restart — the exact failure we auto-recover from elsewhere.
         let openResult = IOHIDManagerOpen(manager, IOOptionBits(kIOHIDOptionsTypeNone))
         guard openResult == kIOReturnSuccess else {
             throw HIDError.managerOpenFailed(openResult)

@@ -1663,46 +1663,135 @@ final class AppState {
     @ObservationIgnored private(set) var hardwareDevice: KeyboardDevice?
     var hardwareConnected = false
     var hardwareName: String?
+    /// True while the auto-reconnect loop is trying to reattach after the board
+    /// dropped (e.g. re-enumeration triggered by an external layer edit).
+    var isReconnecting = false
+    /// True when the user deliberately released the board ("Release for
+    /// Editing"); parks auto-reconnect until they hit Reconnect.
+    private(set) var hardwareReleased = false
+
+    @ObservationIgnored private var reconnectTask: Task<Void, Never>?
+    /// Backoff loop gives up after this many misses (~2 min at the 5 s cap) so a
+    /// board left unplugged doesn't poll forever.
+    private static let maxReconnectAttempts = 24
 
     /// Try the Codex Micro / Creator Micro 2 protocol first (confirmed by
-    /// Work Louder as the current hardware), then VIA for original
-    /// Creator Micro 1 boards.
+    /// Work Louder as the current hardware), then VIA for original Creator
+    /// Micro 1 boards. Entry point for both the first connect and the manual
+    /// Reconnect button.
     func connectHardware() {
+        cancelReconnect()
+        hardwareReleased = false
+        if !attemptConnect() {
+            log("no keyboard found — plug in via USB-C and make sure Work Louder Input is closed")
+        }
+    }
+
+    /// One connection attempt across the supported protocols. Quiet on failure —
+    /// the caller decides whether to log or retry.
+    @discardableResult
+    private func attemptConnect() -> Bool {
+        // Drop any prior handle so a re-enumerated board gets a clean grab.
+        hardwareDevice?.disconnect()
+        hardwareDevice = nil
+
         let voai = VOAIDevice(layout: layout)
         voai.onDeviceEvent = { [weak self] event in
             Task { @MainActor in self?.handleDeviceEvent(event) }
         }
         voai.onConnectionChange = { [weak self] connected in
-            Task { @MainActor in
-                self?.hardwareConnected = connected
-                if !connected { self?.log("keyboard disconnected") }
-            }
+            Task { @MainActor in self?.handleHardwareConnectionChange(connected) }
         }
         if (try? voai.connect()) != nil {
             hardwareDevice = voai
             hardwareConnected = true
             hardwareName = "Codex Micro / Creator Micro 2"
             log("🔌 connected: Codex Micro family (v.oai protocol) — lights are live")
-            return
+            return true
         }
         let via = VIAHIDDevice(layout: layout)
+        via.onConnectionChange = { [weak self] connected in
+            Task { @MainActor in self?.handleHardwareConnectionChange(connected) }
+        }
         if (try? via.connect()) != nil {
             hardwareDevice = via
             hardwareConnected = true
             hardwareName = "Creator Micro (VIA)"
             log("🔌 connected: Creator Micro v1 (VIA protocol) — lights are live")
-            return
+            return true
         }
         hardwareConnected = false
         hardwareName = nil
-        log("no keyboard found — plug in via USB-C and make sure Work Louder Input is closed")
+        return false
     }
 
-    func disconnectHardware() {
+    /// Shared connection-change sink for whichever protocol is live. A drop is
+    /// usually transient — editing layers in another app (e.g. Work Louder
+    /// Input) re-enumerates the board over USB — so we auto-reconnect rather
+    /// than treat it as permanent, unless the user deliberately released it.
+    private func handleHardwareConnectionChange(_ connected: Bool) {
+        if connected {
+            hardwareConnected = true
+            return
+        }
+        hardwareConnected = false
+        guard !hardwareReleased else { return }
+        log("keyboard dropped — reconnecting…")
+        scheduleReconnect()
+    }
+
+    private func scheduleReconnect() {
+        guard reconnectTask == nil else { return }
+        isReconnecting = true
+        reconnectTask = Task { @MainActor [weak self] in
+            var delayMs: UInt64 = 500
+            var attempts = 0
+            while !Task.isCancelled {
+                guard let self, !self.hardwareReleased else { break }
+                if self.attemptConnect() {
+                    self.log("🔌 reconnected after re-enumeration")
+                    break
+                }
+                attempts += 1
+                if attempts >= Self.maxReconnectAttempts {
+                    self.log("gave up reconnecting — hit Reconnect to try again")
+                    break
+                }
+                try? await Task.sleep(nanoseconds: delayMs * 1_000_000)
+                delayMs = min(delayMs * 2, 5_000)  // exponential backoff, capped at 5 s
+            }
+            self?.isReconnecting = false
+            self?.reconnectTask = nil
+        }
+    }
+
+    private func cancelReconnect() {
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        isReconnecting = false
+    }
+
+    private func teardownHardware() {
+        cancelReconnect()
         hardwareDevice?.disconnect()
         hardwareDevice = nil
         hardwareConnected = false
         hardwareName = nil
+    }
+
+    /// Deliberately release the board so its raw-HID pipe is free for another
+    /// app (e.g. editing layers in Work Louder Input). Parks auto-reconnect
+    /// until Reconnect. We only release *our* handle — macOS's own HID binding
+    /// clears on the next unplug/replug, not from here.
+    func releaseHardwareForEditing() {
+        hardwareReleased = true
+        teardownHardware()
+        log("keyboard released — edit layers freely, then hit Reconnect")
+    }
+
+    func disconnectHardware() {
+        hardwareReleased = true
+        teardownHardware()
         log("keyboard released")
     }
 

@@ -79,7 +79,18 @@ struct DiagnosticsPane: View {
                         Label("Live: \(appState.hardwareName ?? "keyboard")", systemImage: "checkmark.circle.fill")
                             .foregroundStyle(.green)
                         Spacer()
-                        Button("Disconnect") { appState.disconnectHardware() }
+                        Button("Release for Editing") { appState.releaseHardwareForEditing() }
+                            .help("Frees the board's HID pipe so you can edit layers in another app, then hit Reconnect. Auto-reconnect stays off until you do.")
+                    } else if appState.isReconnecting {
+                        Label("Reconnecting…", systemImage: "arrow.triangle.2.circlepath")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Cancel") { appState.disconnectHardware() }
+                    } else if appState.hardwareReleased {
+                        Label("Released — edit layers, then Reconnect", systemImage: "pause.circle")
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Button("Reconnect") { appState.connectHardware() }
                     } else {
                         Button("Connect Keyboard (Go Live)") {
                             appState.connectHardware()
