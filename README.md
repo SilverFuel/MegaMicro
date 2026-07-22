@@ -1,5 +1,11 @@
 # MegaMicro
 
+Your **Agent Keys** light up to reflect the live state of the task each agent is running —
+thinking, waiting on you, finished, or errored — so a single glance at your keyboard tells you
+exactly where everything stands. It works on both the **Codex Micro** and the **Creator Micro**
+by Work Louder. And don't let the playful colors fool you: this is a serious tool for real work,
+just with a little more personality than your average one.
+
 MegaMicro is a native Apple-platform app — a **general-purpose RGB AI keyboard configurator**
 that maps live AI coding-agent activity onto a keyboard's RGB lighting and keys, turning it into
 a physical command center for local AI agents. Assign agents to keys, see their state through RGB
