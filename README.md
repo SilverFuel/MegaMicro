@@ -15,8 +15,9 @@ Companion apps bring the live dashboard to iPhone, iPad, and Apple Watch.
 > **Work Louder boards** — the OpenAI Codex Micro / Creator Micro 2 (`v.oai`) and Creator Micro v1
 > (`VIA`) — with more boards addable through the same layout model.
 
-<!-- Screenshot placeholder: Assets/screenshots/manage-agents.png -->
-<!-- Suggested caption: Assign live coding agents to the six illuminated keys. -->
+![MegaMicro mirrored across the Codex Micro, iPhone, and Apple Watch — an agent needs attention, so the board, phone, and watch all glow red.](Assets/screenshots/hero.png)
+
+*Live agent status on the Codex Micro, iPhone, and Apple Watch at once. Here an agent hit an error, so the whole fleet glows solid red (Steady glow enabled).*
 
 ## What it does
 
@@ -92,6 +93,10 @@ The **Apple Watch app** receives dashboard snapshots through its paired iPhone a
 current fleet state locally. Its watch-face complication provides a quick launcher into the
 watch dashboard. The Mac remains the local authority for integrations, keyboard hardware,
 and application focusing; prompts and source code are not sent to the companion apps.
+
+![The MegaMicro board mirrored to iPhone and Apple Watch, all glowing yellow for a waiting agent.](Assets/screenshots/companions.png)
+
+*The same board mirrored to iPhone and Apple Watch — here an agent is waiting on input, so the fleet glows yellow.*
 
 ## Requirements
 
