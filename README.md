@@ -474,6 +474,18 @@ layout designer are intentionally out of scope. Keeping the first contribution s
 learn whether people actually want broader keyboard support before committing to a much larger
 architecture.
 
+### Agent integration ideas
+
+MegaMicro reflects any agent that reports its state — today via per-agent hooks that POST to the
+local webhook. We also welcome new *sources*, especially ones that report state a different way:
+
+- **[Herdr](https://github.com/ogulcancelik/herdr)** — a terminal agent multiplexer that already
+  tracks per-pane agent states (`working` / `blocked` / `done`) and streams them over a local
+  socket API. Rather than installing hooks, MegaMicro would connect as a read-only client and
+  subscribe to its state-change events — a strong fit for the agents where Herdr is the lifecycle
+  authority (Pi, OMP, OpenCode, and others). Design and open questions:
+  [#1](https://github.com/jessewaites/MegaMicro/issues/1).
+
 ## Current project status
 
 MegaMicro is an early-stage project. The software simulator, agent state engine, integrations,
