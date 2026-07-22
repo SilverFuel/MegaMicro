@@ -1,15 +1,19 @@
 # MegaMicro
 
-MegaMicro is a native Apple-platform app that turns the **OpenAI Codex Micro by Work Louder**
-into a physical command center for local AI coding agents. Assign agents to keys, see
-their state through RGB lighting, jump to the agent that needs attention, and monitor a
-fleet without repeatedly searching through terminal and editor windows. Companion apps
-bring the live dashboard to iPhone, iPad, and Apple Watch.
+MegaMicro is a native Apple-platform app — a **general-purpose RGB AI keyboard configurator**
+that maps live AI coding-agent activity onto a keyboard's RGB lighting and keys, turning it into
+a physical command center for local AI agents. Assign agents to keys, see their state through RGB
+lighting, jump to the agent that needs attention, and monitor a fleet without repeatedly searching
+through terminal and editor windows. It ships with first-class support for the **OpenAI Codex Micro
+by Work Louder** and drives other Work Louder boards through a device-agnostic layout model.
+Companion apps bring the live dashboard to iPhone, iPad, and Apple Watch.
 
 > [!IMPORTANT]
-> MegaMicro currently supports **macOS 14 or later** and is designed specifically for
-> the **OpenAI Codex Micro connected over USB-C**. It is not a general-purpose keyboard
-> configurator, and Bluetooth operation is not currently supported.
+> MegaMicro is a general-purpose RGB AI keyboard configurator: it maps live AI-agent activity to
+> per-key lighting and actions, driven by a device-agnostic layout model. It runs on **macOS 14 or
+> later** and connects over **USB-C** (Bluetooth is untested). Hardware support currently ships for
+> **Work Louder boards** — the OpenAI Codex Micro / Creator Micro 2 (`v.oai`) and Creator Micro v1
+> (`VIA`) — with more boards addable through the same layout model.
 
 <!-- Screenshot placeholder: Assets/screenshots/manage-agents.png -->
 <!-- Suggested caption: Assign live coding agents to the six illuminated keys. -->
@@ -389,7 +393,7 @@ Project structure:
 MegaMicro/
 ├── App/          application state, subsystem wiring, and render loop
 ├── Core/         models, configuration, HTTP parsing, state machine, and effects
-├── Devices/      Codex Micro protocol, HID transport, simulator, and diagnostics
+├── Devices/      keyboard protocols (v.oai + VIA), HID transport, simulator, and diagnostics
 ├── Services/     integrations, bridge installation, focus, input, and workspace tracking
 └── UI/           menu-bar panel and configuration screens
 MegaMicroBridge/  provider hook normalization command-line executable
@@ -398,7 +402,7 @@ MegaMicroiOS/     iPhone and iPad dashboard, pairing, and remote controls
 MegaMicroWatch/   Apple Watch fleet monitor
 MegaMicroComplication/ watch-face launcher complication
 MegaMicroShared/  shared brand assets for companion targets
-Assets/           logos, images, and research material
+Assets/           logos and images
 ```
 
 `project.yml` is the source of truth for the Xcode project. Generated `.xcodeproj` files are
@@ -406,9 +410,10 @@ ignored by Git and should not be edited manually.
 
 ## Contributions wanted
 
-MegaMicro is built around the Codex Micro today, but it should not have to remain tied to one
-physical keyboard. We would welcome a focused pull request that adds a **small built-in keyboard
-preset catalog** without turning the app into a general-purpose keyboard designer.
+MegaMicro is a general-purpose RGB AI keyboard configurator, but its hardware support ships for
+Work Louder boards today. It should not stay tied to one vendor — we would welcome a focused pull
+request that adds a **small built-in keyboard preset catalog** without trying to become a universal
+keyboard-hardware driver (arbitrary detection, flashing, and RGB) in one step.
 
 ### Small keyboard preset catalog
 
