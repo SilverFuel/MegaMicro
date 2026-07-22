@@ -26,6 +26,9 @@ final class DashboardModel {
 
     var rgbRules: RGBRules = DefaultProfiles.conductor.rgbRules
     var underglow: UnderglowMode = DefaultProfiles.conductor.underglow
+    /// Render states as a solid color instead of pulsing/flashing (mirrors the
+    /// Mac's `AppConfig.steadyGlow`, synced so companions match).
+    var steadyGlow: Bool = false
     /// Which of the (up to three) profile status LEDs are lit on the chassis.
     var activeProfileIndex: Int = 0
 
@@ -97,6 +100,7 @@ final class DashboardModel {
         return AnimationRenderer.frame(
             aggregate: aggregate, aggregateAge: aggregateAge,
             perKeyStates: perKey, rules: rgbRules, underglowMode: underglow,
+            steadyGlow: steadyGlow,
             ledCount: layout.ledCount, t: t)
     }
 
@@ -115,6 +119,7 @@ final class DashboardModel {
         fleetNotification = snapshot.fleetNotification
         rgbRules = snapshot.rgbRules
         underglow = snapshot.underglow
+        steadyGlow = snapshot.steadyGlow
     }
 
     // MARK: Commands

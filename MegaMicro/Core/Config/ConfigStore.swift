@@ -66,6 +66,10 @@ struct AppConfig: Codable, Hashable, Sendable {
     var onboardingComplete: Bool = false
     /// A friendly, user-chosen name for the physical desk device.
     var deviceName: String = "My MegaMicro"
+    /// Render agent states as a solid color instead of pulsing/flashing. Steadier
+    /// for photos and less distracting; applies everywhere the board is shown
+    /// (device, on-screen simulator, and synced companions).
+    var steadyGlow: Bool = false
     /// Hook event → reported state, per agent CLI. Editable so a future
     /// Claude Code / Codex release renaming or adding events is a config
     /// tweak, not an app update.
@@ -115,7 +119,8 @@ struct AppConfig: Codable, Hashable, Sendable {
              profiles, hooksInstalled, workspaceKeyPins, keyLegends, keyBindings,
              claudeHookEvents, codexHookEvents,
              activeLayoutID, customLayouts, layoutSettings, fleetExclusions, appearance,
-             macNotificationsEnabled, promptSnippets, onboardingComplete, deviceName
+             macNotificationsEnabled, promptSnippets, onboardingComplete, deviceName,
+             steadyGlow
     }
 
     init(from decoder: Decoder) throws {
@@ -141,6 +146,7 @@ struct AppConfig: Codable, Hashable, Sendable {
         promptSnippets = try c.decodeIfPresent([PromptSnippet].self, forKey: .promptSnippets) ?? defaults.promptSnippets
         onboardingComplete = try c.decodeIfPresent(Bool.self, forKey: .onboardingComplete) ?? defaults.onboardingComplete
         deviceName = try c.decodeIfPresent(String.self, forKey: .deviceName) ?? defaults.deviceName
+        steadyGlow = try c.decodeIfPresent(Bool.self, forKey: .steadyGlow) ?? defaults.steadyGlow
     }
 }
 

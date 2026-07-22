@@ -28,9 +28,13 @@ struct EffectFrame: Hashable, Sendable {
 /// device I/O live elsewhere.
 enum AnimationRenderer {
     /// Color for a single state at time `t` (seconds) with state age `age`.
-    static func color(for state: AgentState, rules: RGBRules, t: TimeInterval, age: TimeInterval) -> HSV {
+    /// `steadyGlow` flattens every animation to a solid color (full intensity),
+    /// so a strobing error reads as solid red, breathing as solid, etc.
+    static func color(for state: AgentState, rules: RGBRules, t: TimeInterval, age: TimeInterval,
+                      steadyGlow: Bool = false) -> HSV {
         let spec = rules.spec(for: state)
-        return spec.color.scaled(brightness: EffectMath.intensity(for: spec.kind, t: t, age: age))
+        let intensity = steadyGlow ? 1 : EffectMath.intensity(for: spec.kind, t: t, age: age)
+        return spec.color.scaled(brightness: intensity)
     }
 
     /// Whole frame. One agent = one key: unassigned LEDs rest at idle; each
@@ -44,22 +48,26 @@ enum AnimationRenderer {
         perKeyStates: [Int: (state: AgentState, age: TimeInterval)],
         rules: RGBRules,
         underglowMode: UnderglowMode = .aggregate,
+        steadyGlow: Bool = false,
         ledCount: Int,
         t: TimeInterval
     ) -> EffectFrame {
+        // In steady-glow mode the on-device firmware must hold too, so the
+        // semantic spec kind collapses to `.solid` alongside the flat color.
+        func renderKind(_ kind: EffectSpec.Kind) -> EffectSpec.Kind { steadyGlow ? .solid : kind }
         let idleSpec = rules.spec(for: .idle)
-        let idleColor = color(for: .idle, rules: rules, t: t, age: 0)
+        let idleColor = color(for: .idle, rules: rules, t: t, age: 0, steadyGlow: steadyGlow)
         var leds = Array(repeating: idleColor, count: ledCount)
         var specs: [Int: LEDSpec] = [:]
         for index in 0..<ledCount {
-            specs[index] = LEDSpec(color: idleSpec.color, kind: idleSpec.kind)
+            specs[index] = LEDSpec(color: idleSpec.color, kind: renderKind(idleSpec.kind))
         }
         for (index, entry) in perKeyStates where index >= 0 && index < ledCount {
-            leds[index] = color(for: entry.state, rules: rules, t: t, age: entry.age)
+            leds[index] = color(for: entry.state, rules: rules, t: t, age: entry.age, steadyGlow: steadyGlow)
             let spec = rules.spec(for: entry.state)
-            specs[index] = LEDSpec(color: spec.color, kind: spec.kind)
+            specs[index] = LEDSpec(color: spec.color, kind: renderKind(spec.kind))
         }
-        let aggregateColor = color(for: aggregate, rules: rules, t: t, age: aggregateAge)
+        let aggregateColor = color(for: aggregate, rules: rules, t: t, age: aggregateAge, steadyGlow: steadyGlow)
         let underglow: HSV = switch underglowMode {
         case .aggregate: aggregateColor
         case .solid(let hsv): hsv

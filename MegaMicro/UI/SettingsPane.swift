@@ -31,6 +31,15 @@ struct SettingsPane: View {
             }
 
             Section {
+                Toggle("Steady glow", isOn: $state.config.steadyGlow)
+            } header: {
+                Text("Lighting")
+            } footer: {
+                Text("Show agent states as a solid color instead of pulsing or flashing — steadier for photos and less distracting. An error shows as solid red rather than a strobe.")
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
+
+            Section {
                 LabeledContent("Status") {
                     HStack(spacing: 6) {
                         Circle().fill(appState.syncServer.isRunning ? .green : .secondary)

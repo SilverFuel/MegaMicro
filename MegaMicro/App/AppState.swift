@@ -424,7 +424,8 @@ final class AppState {
             activityFeed: Array(activityFeed.prefix(80)),
             fleetNotification: fleetNotification,
             rgbRules: activeProfile.rgbRules,
-            underglow: activeProfile.underglow)
+            underglow: activeProfile.underglow,
+            steadyGlow: config.steadyGlow)
     }
 
     /// Apply a command received from a synced client, routed to the same
@@ -1271,6 +1272,7 @@ final class AppState {
         if dashboard.cwdBranches != cwdBranches { dashboard.cwdBranches = cwdBranches }
         if dashboard.rgbRules != rules { dashboard.rgbRules = rules }
         if dashboard.underglow != activeProfile.underglow { dashboard.underglow = activeProfile.underglow }
+        if dashboard.steadyGlow != config.steadyGlow { dashboard.steadyGlow = config.steadyGlow }
         if dashboard.workspacesRoot != workspacesRoot { dashboard.workspacesRoot = workspacesRoot }
         if dashboard.deviceName != config.deviceName { dashboard.deviceName = config.deviceName }
         let profileIndex = config.profiles.firstIndex { $0.id == config.activeProfileID } ?? 0
@@ -1642,6 +1644,7 @@ final class AppState {
             aggregate: aggregate, aggregateAge: aggregateAge,
             perKeyStates: perKey, rules: rules,
             underglowMode: activeProfile.underglow,
+            steadyGlow: config.steadyGlow,
             ledCount: layout.ledCount, t: t)
         let notice = makeFleetNotification(included: Array(fleetSessions), state: aggregate)
         if notice != fleetNotification {

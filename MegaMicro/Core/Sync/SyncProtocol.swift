@@ -25,6 +25,10 @@ struct DashboardSnapshot: Codable, Sendable {
 
     var rgbRules: RGBRules
     var underglow: UnderglowMode
+    /// Solid-color mode (no pulsing/flashing), mirrored from the Mac. Additive
+    /// and one-directional (Mac→client), so existing clients that predate it
+    /// simply ignore the extra key.
+    var steadyGlow: Bool = false
 }
 
 /// A reassign/monitor action a client sends back to the Mac. Mirrors the
